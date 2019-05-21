@@ -9,6 +9,8 @@ extern "C"
 };
 #include "opencv2/opencv.hpp"
 
+#include "nalu_type.h"
+
 AVCodec* pCodec = NULL;
 AVCodecContext* pCodecCtx = NULL;
 SwsContext* img_convert_ctx = NULL;
@@ -105,7 +107,9 @@ void H264_Release(void)
 }
 int main(int argc, char* argv[])
 {
-	OpenBitstreamFile("../bytes_write.h264");
+	const char* in_filename = argv[1];//输入文件名（Input file URL）
+
+	OpenBitstreamFile(in_filename);
 	NALU_t* nal;
 	char fName[300];
 	int Frame = 0;
@@ -125,6 +129,11 @@ int main(int argc, char* argv[])
 						   //下一个位置即为下个NALU的起始码0x000001
 		dump(nal);//输出NALU长度和TYPE
 
+		if (nalu_type[nal->nal_unit_type])
+		{
+			printf("%s\n", nalu_type[nal->nal_unit_type]);
+		}
+
 		sprintf(fName, "dump[Len=%d][%d].txt", nal->len, Frame);
 
 		memset(m_pData, 0, 4);
@@ -143,8 +152,9 @@ int main(int argc, char* argv[])
 
 		cv::imshow("xxx", image);
 
-		cv::waitKey(40);
+		//cv::waitKey(40);
 
+		cv::waitKey(0);
 
 
 		//DumpChar(fName, nal->buf, nal->len);
